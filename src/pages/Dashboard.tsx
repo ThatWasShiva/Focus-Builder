@@ -5,7 +5,7 @@ import { useAppContext } from '../AppContext';
 
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { streakCount, totalFeetSaved } = useAppContext();
+  const { streakCount, totalFeetSaved, lastCalibrationDate } = useAppContext();
 
   // Create a fun milestone based calculation
   const getLandmark = (feet: number) => {
@@ -77,13 +77,21 @@ export const Dashboard: React.FC = () => {
         </div>
       </section>
 
-      <section className="w-full max-w-md px-6">
+      <section className="w-full max-w-md px-6 flex flex-col gap-4">
         <button
           onClick={() => navigate('/calibrate')}
           className="w-full py-5 bg-white rounded-full text-on-primary-container font-label font-bold tracking-[0.15em] uppercase hover:bg-white/90 active:scale-95 transition-all duration-300 shadow-2xl shadow-white/5"
         >
           ENTER FOCUS
         </button>
+        {lastCalibrationDate === new Date().toDateString() && (
+          <button
+            onClick={() => navigate('/mode')}
+            className="w-full py-3 bg-transparent border border-white/10 rounded-full text-on-surface font-label font-medium tracking-[0.15em] uppercase hover:bg-white/5 active:bg-white/10 transition-all duration-300"
+          >
+            SKIP CALIBRATION
+          </button>
+        )}
       </section>
     </motion.div>
   );

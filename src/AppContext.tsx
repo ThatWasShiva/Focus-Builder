@@ -3,8 +3,10 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 interface AppContextType {
   streakCount: number;
   totalFeetSaved: number;
+  lastCalibrationDate: string | null;
   incrementStreak: () => void;
   updateFeetSaved: (sessionDurationSeconds: number) => void;
+  markCalibrationComplete: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -18,6 +20,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [totalFeetSaved, setTotalFeetSaved] = useState<number>(() => {
     const saved = localStorage.getItem('totalFeetSaved');
     return saved ? parseFloat(saved) : 0;
+  });
+
+  const [lastCalibrationDate, setLastCalibrationDate] = useState<string | null>(() => {
+    return localStorage.getItem('lastCalibrationDate');
   });
 
   useEffect(() => {
@@ -34,8 +40,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setTotalFeetSaved(prev => prev + (sessionDurationSeconds * 0.5));
   };
 
+  const markCalibrationComplete = () => {
+    const today = new Date().toDateString();
+    setLastCalibrationDate(today);
+    localStorage.setItem('lastCalibrationDate', today);
+  };
+
   return (
-    <AppContext.Provider value={{ streakCount, totalFeetSaved, incrementStreak, updateFeetSaved }}>
+    <AppContext.Provider value={{ streakCount, totalFeetSaved, lastCalibrationDate, incrementStreak, updateFeetSaved, markCalibrationComplete }}>
       {children}
     </AppContext.Provider>
   );

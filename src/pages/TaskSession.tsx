@@ -1,27 +1,45 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTimer } from '../hooks/useTimer';
 import { getDailyQuote } from '../data/triviaData';
 import { VisualCrutch } from '../components/VisualCrutch';
 import { useAppContext } from '../AppContext';
+import { useSound } from '../hooks/useSound';
 
-export const FocusSession: React.FC = () => {
+export const TaskSession: React.FC = () => {
   const navigate = useNavigate();
-  // We can read duration from location state if we want to visually display a target in free flow, but for now we'll just track elapsed time.
-  const { seconds, formattedTime } = useTimer(true, 0, false);
+  const location = useLocation();
+  const durationMinutes = location.state?.duration || 10;
+  
+  // Convert minutes to seconds for countdown
+  const initialSeconds = durationMinutes * 60;
+  const { seconds, formattedTime } = useTimer(true, initialSeconds, true);
+  
   const [trivia, setTrivia] = useState('');
   const { updateFeetSaved } = useAppContext();
+  const { playChime } = useSound();
+  const [hasPlayedChime, setHasPlayedChime] = useState(false);
 
   useEffect(() => {
-    // Pick daily quote via local storage rotation
     setTrivia(getDailyQuote());
   }, []);
 
+  useEffect(() => {
+    if (seconds <= 0 && !hasPlayedChime) {
+      playChime();
+      setHasPlayedChime(true);
+    }
+  }, [seconds, hasPlayedChime, playChime]);
+
   const handleEndSession = () => {
-    updateFeetSaved(seconds);
+    // Record equivalent time successfully spent
+    const completedSeconds = initialSeconds - seconds;
+    updateFeetSaved(completedSeconds);
     navigate('/dichotomy');
   };
+
+  const progressPercentage = ((initialSeconds - seconds) / initialSeconds) * 100;
 
   return (
     <motion.div
@@ -32,6 +50,15 @@ export const FocusSession: React.FC = () => {
     >
       <VisualCrutch />
       
+      {/* Progress Bar Top Edge */}
+      <div className="absolute top-0 left-0 h-1 bg-white/20 w-full z-50">
+        <motion.div 
+          className="h-full bg-primary"
+          style={{ width: `${progressPercentage}%` }}
+          layout
+        />
+      </div>
+
       <div className="z-10 flex flex-col items-center justify-between h-full py-24 w-full px-8">
         
         {/* Top Third - Trivia */}
@@ -48,11 +75,11 @@ export const FocusSession: React.FC = () => {
 
         {/* Center - Timer */}
         <div className="flex flex-col items-center justify-center -mt-16">
-          <span className="font-body text-7xl md:text-9xl text-primary font-bold tracking-tighter tabular-nums drop-shadow-2xl">
+          <span className={`font-body text-7xl md:text-9xl ${seconds === 0 ? 'text-green-400' : 'text-primary'} font-bold tracking-tighter tabular-nums drop-shadow-2xl transition-colors duration-1000`}>
             {formattedTime}
           </span>
           <span className="font-label text-xs tracking-[0.3em] uppercase text-secondary opacity-40 mt-4">
-            Session active
+            {seconds === 0 ? 'Constraint Fulfilled' : 'Constraint Active'}
           </span>
         </div>
 

@@ -3,7 +3,9 @@ import { AnimatePresence } from 'framer-motion';
 import { AppProvider } from './AppContext';
 import { Dashboard } from './pages/Dashboard';
 import { Calibration } from './pages/Calibration';
+import { ModeSelection } from './pages/ModeSelection';
 import { FocusSession } from './pages/FocusSession';
+import { TaskSession } from './pages/TaskSession';
 import { Dichotomy } from './pages/Dichotomy';
 import { Result } from './pages/Result';
 
@@ -15,7 +17,9 @@ function AnimatedRoutes() {
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/calibrate" element={<Calibration />} />
+        <Route path="/mode" element={<ModeSelection />} />
         <Route path="/focus" element={<FocusSession />} />
+        <Route path="/task-focus" element={<TaskSession />} />
         <Route path="/dichotomy" element={<Dichotomy />} />
         <Route path="/result" element={<Result />} />
       </Routes>

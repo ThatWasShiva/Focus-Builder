@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { useAppContext } from '../AppContext';
 
 export const Calibration: React.FC = () => {
   const navigate = useNavigate();
+  const { markCalibrationComplete } = useAppContext();
   const [phase, setPhase] = useState<'IDLE' | 'PULSE' | 'WAIT_RESPONSE' | 'FEEDBACK'>('IDLE');
   const [feedbackMsg, setFeedbackMsg] = useState<string>('');
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -21,7 +23,7 @@ export const Calibration: React.FC = () => {
         
         timeoutRef.current = setTimeout(() => {
           handleMissed();
-        }, 3000);
+        }, 2000);
       }, 200);
     }, delay);
   };
@@ -41,7 +43,8 @@ export const Calibration: React.FC = () => {
       setTimeout(startRitual, 2000);
     } else if (phase === 'PULSE' || phase === 'WAIT_RESPONSE') {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      navigate('/focus');
+      markCalibrationComplete();
+      navigate('/mode');
     }
   };
 

@@ -24,5 +24,36 @@ export const useSound = () => {
     }, 150);
   }, []);
 
-  return { playBloop };
+  const playChime = useCallback(() => {
+    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator1 = audioCtx.createOscillator();
+    const oscillator2 = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    oscillator1.type = 'sine';
+    oscillator1.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+
+    oscillator2.type = 'triangle';
+    oscillator2.frequency.setValueAtTime(1760, audioCtx.currentTime); // A6 (harmonic)
+
+    gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 0.05); // Attack
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5); // Long decay
+
+    oscillator1.connect(gainNode);
+    oscillator2.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    oscillator1.start();
+    oscillator2.start();
+
+    oscillator1.stop(audioCtx.currentTime + 1.5);
+    oscillator2.stop(audioCtx.currentTime + 1.5);
+
+    setTimeout(() => {
+      audioCtx.close();
+    }, 1600);
+  }, []);
+
+  return { playBloop, playChime };
 };
