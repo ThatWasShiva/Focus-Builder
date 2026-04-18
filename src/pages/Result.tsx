@@ -4,14 +4,16 @@ import { useNavigate } from 'react-router-dom';
 import { useSound } from '../hooks/useSound';
 import { useAppContext } from '../AppContext';
 import { getComplianceFeedback } from '../utils/complianceMessages';
+import { GameModeSelectModal } from '../components/game/GameModeSelectModal';
 
 const tasksArray = [
   "Look at the furthest wall for 30 seconds.",
   "Drink a full glass of water.",
   "Text someone a photo from your camera roll from 2020.",
   "Open a window. Close it.",
-  "Stand up and touch your toes once.",
-  "Name 3 things you can hear right now."
+  " STAND UP and touch your toes once.",
+  "Name 3 things you can hear right now.",
+  "Play one round of Zip (Train Mode)."
 ];
 
 export const Result: React.FC = () => {
@@ -19,6 +21,7 @@ export const Result: React.FC = () => {
   const { playBloop } = useSound();
   const { incrementStreak, addFeetSavedExplicit, complianceReport, pendingFeetSeconds, lastSessionMode } = useAppContext();
   const [task, setTask] = useState('');
+  const [isGameModalOpen, setIsGameModalOpen] = useState(false);
 
   useEffect(() => {
     playBloop();
@@ -75,7 +78,30 @@ export const Result: React.FC = () => {
             "{task}"
           </p>
         </motion.div>
+
+        {/* Game Suggestion Card */}
+        <motion.button
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          onClick={() => setIsGameModalOpen(true)}
+          className="w-full p-4 bg-primary/10 border border-primary/20 rounded-2xl flex items-center gap-4 hover:bg-primary/20 transition-all text-left"
+        >
+          <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center text-primary">
+            <span className="material-symbols-outlined">psychology</span>
+          </div>
+          <div className="flex-1">
+            <p className="font-headline text-sm text-white">Brain warm-up?</p>
+            <p className="font-body text-[10px] text-primary/60 uppercase tracking-widest font-bold">Try a quick Zip puzzle</p>
+          </div>
+          <span className="material-symbols-outlined text-white/40">chevron_right</span>
+        </motion.button>
       </div>
+
+      <GameModeSelectModal 
+        isOpen={isGameModalOpen} 
+        onClose={() => setIsGameModalOpen(false)} 
+      />
 
       <div className="w-full max-w-md pb-16">
         <button

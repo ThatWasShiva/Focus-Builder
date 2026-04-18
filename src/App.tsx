@@ -10,6 +10,7 @@ import { TaskSession } from './pages/TaskSession';
 import { Dichotomy } from './pages/Dichotomy';
 import { Result } from './pages/Result';
 import { LimitsConfig } from './pages/LimitsConfig';
+import { ZipGame } from './components/game/ZipGame';
 import { InterceptOverlay } from './components/InterceptOverlay';
 import { useInterceptOnResume } from './hooks/useInterceptOnResume';
 import { useLimits } from './context/LimitsContext';
@@ -28,6 +29,7 @@ function AnimatedRoutes() {
         <Route path="/dichotomy" element={<Dichotomy />} />
         <Route path="/result" element={<Result />} />
         <Route path="/limits" element={<LimitsConfig />} />
+        <Route path="/game/:mode" element={<ZipGame />} />
       </Routes>
     </AnimatePresence>
   );
