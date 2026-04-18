@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../AppContext';
+import { UsageSummaryWidget } from '../components/UsageSummaryWidget';
 
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -30,10 +31,17 @@ export const Dashboard: React.FC = () => {
           <span className="material-symbols-outlined text-stone-100">blur_on</span>
           <h1 className="text-lg font-headline tracking-[0.2em] text-stone-100 uppercase">THE VOID</h1>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
           <nav className="hidden md:flex gap-8">
             <span className="text-stone-100 font-headline tracking-widest uppercase cursor-default">DASHBOARD</span>
           </nav>
+          <button
+            onClick={() => navigate('/limits')}
+            className="opacity-30 hover:opacity-100 transition-opacity"
+            title="App Limits"
+          >
+            <span className="material-symbols-outlined text-white text-xl">tune</span>
+          </button>
         </div>
       </header>
 
@@ -46,6 +54,11 @@ export const Dashboard: React.FC = () => {
             <span className="material-symbols-outlined text-lg">architecture</span>
             <p className="font-label text-xs tracking-tight">Equivalent to the height of {getLandmark(totalFeetSaved)}.</p>
           </div>
+        </div>
+
+        {/* App Usage Summary Widget */}
+        <div className="mt-4">
+          <UsageSummaryWidget />
         </div>
       </section>
 
