@@ -6,24 +6,27 @@ import { getDailyQuote } from '../data/triviaData';
 import { VisualCrutch } from '../components/VisualCrutch';
 import { useAppContext } from '../AppContext';
 import { useSound } from '../hooks/useSound';
+import { useComplianceTracker } from '../hooks/useComplianceTracker';
 
 export const TaskSession: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const durationMinutes = location.state?.duration || 10;
   
-  // Convert minutes to seconds for countdown
   const initialSeconds = durationMinutes * 60;
   const { seconds, formattedTime } = useTimer(true, initialSeconds, true);
   
   const [trivia, setTrivia] = useState('');
-  const { updateFeetSaved } = useAppContext();
+  const { setComplianceReport, setPendingFeetSeconds, setLastSessionMode } = useAppContext();
   const { playChime } = useSound();
   const [hasPlayedChime, setHasPlayedChime] = useState(false);
 
+  const { startTracking, stopTracking, getComplianceReport, totalViolations } = useComplianceTracker('task', true);
+
   useEffect(() => {
     setTrivia(getDailyQuote());
-  }, []);
+    startTracking();
+  }, [startTracking]);
 
   useEffect(() => {
     if (seconds <= 0 && !hasPlayedChime) {
@@ -33,9 +36,14 @@ export const TaskSession: React.FC = () => {
   }, [seconds, hasPlayedChime, playChime]);
 
   const handleEndSession = () => {
-    // Record equivalent time successfully spent
+    stopTracking();
     const completedSeconds = initialSeconds - seconds;
-    updateFeetSaved(completedSeconds);
+    const isEarly = seconds > 0;
+    const report = getComplianceReport(isEarly);
+    
+    setComplianceReport(report);
+    setPendingFeetSeconds(completedSeconds);
+    setLastSessionMode('task');
     navigate('/dichotomy');
   };
 
@@ -57,6 +65,14 @@ export const TaskSession: React.FC = () => {
           style={{ width: `${progressPercentage}%` }}
           layout
         />
+      </div>
+
+      {/* Compliance Indicator */}
+      <div 
+        className="absolute top-6 left-6 z-50 opacity-30 hover:opacity-100 transition-opacity cursor-default mt-2" 
+        title="Gentle accountability: We're noticing if you switch contexts."
+      >
+        <span className="material-symbols-outlined text-white text-xl">shield</span>
       </div>
 
       <div className="z-10 flex flex-col items-center justify-between h-full py-24 w-full px-8">
@@ -81,6 +97,15 @@ export const TaskSession: React.FC = () => {
           <span className="font-label text-xs tracking-[0.3em] uppercase text-secondary opacity-40 mt-4">
             {seconds === 0 ? 'Constraint Fulfilled' : 'Constraint Active'}
           </span>
+          {totalViolations > 0 && (
+            <motion.span 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="font-label text-[10px] tracking-widest uppercase text-orange-400 mt-2"
+            >
+              Focus Interrupted {totalViolations} time{totalViolations !== 1 && 's'}
+            </motion.span>
+          )}
         </div>
 
         {/* Bottom - End Action */}

@@ -5,21 +5,27 @@ import { useTimer } from '../hooks/useTimer';
 import { getDailyQuote } from '../data/triviaData';
 import { VisualCrutch } from '../components/VisualCrutch';
 import { useAppContext } from '../AppContext';
+import { useComplianceTracker } from '../hooks/useComplianceTracker';
 
 export const FocusSession: React.FC = () => {
   const navigate = useNavigate();
-  // We can read duration from location state if we want to visually display a target in free flow, but for now we'll just track elapsed time.
   const { seconds, formattedTime } = useTimer(true, 0, false);
   const [trivia, setTrivia] = useState('');
-  const { updateFeetSaved } = useAppContext();
+  const { setComplianceReport, setPendingFeetSeconds, setLastSessionMode } = useAppContext();
+  
+  const { startTracking, stopTracking, getComplianceReport, totalViolations } = useComplianceTracker('free', true);
 
   useEffect(() => {
-    // Pick daily quote via local storage rotation
     setTrivia(getDailyQuote());
-  }, []);
+    startTracking();
+  }, [startTracking]);
 
   const handleEndSession = () => {
-    updateFeetSaved(seconds);
+    stopTracking();
+    const report = getComplianceReport(false); // Free mode has no predefined end, so never "early"
+    setComplianceReport(report);
+    setPendingFeetSeconds(seconds);
+    setLastSessionMode('free');
     navigate('/dichotomy');
   };
 
@@ -31,6 +37,14 @@ export const FocusSession: React.FC = () => {
       className="relative h-screen w-full flex flex-col items-center justify-center bg-black overflow-hidden void-gradient"
     >
       <VisualCrutch />
+      
+      {/* Compliance Indicator */}
+      <div 
+        className="absolute top-6 left-6 z-50 opacity-30 hover:opacity-100 transition-opacity cursor-default" 
+        title="Gentle accountability: We're noticing if you stay focused. This helps you build awareness."
+      >
+        <span className="material-symbols-outlined text-white text-xl">visibility</span>
+      </div>
       
       <div className="z-10 flex flex-col items-center justify-between h-full py-24 w-full px-8">
         
@@ -54,6 +68,15 @@ export const FocusSession: React.FC = () => {
           <span className="font-label text-xs tracking-[0.3em] uppercase text-secondary opacity-40 mt-4">
             Session active
           </span>
+          {totalViolations > 0 && (
+            <motion.span 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="font-label text-[10px] tracking-widest uppercase text-orange-400 mt-2"
+            >
+              Peeked {totalViolations} time{totalViolations !== 1 && 's'}
+            </motion.span>
+          )}
         </div>
 
         {/* Bottom - End Action */}
